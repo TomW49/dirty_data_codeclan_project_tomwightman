@@ -1,0 +1,274 @@
+---
+title: "`dplyr` Practice Homework"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../styles.css
+  pdf_document: default
+---
+
+
+# Using the `dplyr` verbs
+
+Use the `salaries.csv` dataset to answer the following questions:
+
+```{r}
+library(tidyverse)
+
+salary <- janitor::clean_names(read_csv("data/salaries.csv"))
+```
+
+```{r}
+summary(salary)
+```
+
+
+1.	Use `select` to see the beginning salary variable and the current salary variable.
+```{r}
+salary %>% 
+  select(beginning_salary, current_salary)
+```
+
+
+
+2.	Use `filter` to see the employees aged over 50, who have a salary over £20,000.
+```{r}
+salary %>% 
+  filter(age > 50 & current_salary >20000)
+```
+
+
+
+3.	Use `arrange` to order by the data so that the highest salaries are first.
+```{r}
+salary %>% 
+  arrange(desc(current_salary))
+```
+
+
+
+4.	Use `mutate` to make a new variables beginning_salary_pence and current_salary_pence. These should have the corresponding salaries in pence instead of pounds.
+```{r}
+salary %>% 
+  mutate(beggining_sal_pence = beginning_salary * 100)
+```
+
+
+
+5.	Use `summarise` to find the maximum age and the minimum age.
+```{r}
+salary %>% 
+  summarise(age_max = max(age), age_min = min(age))
+```
+
+
+
+6.	Find the minimum salary and the maximum salary.
+```{r}
+salary %>% 
+  summarise(max_sal = max(current_salary), min_sal = min(current_salary))
+```
+
+
+7.	Find all the employees aged under 30.
+```{r}
+salary %>% 
+  filter(age <30) %>% 
+  arrange(desc(age))
+```
+
+
+
+8.	Order the data in terms of increasing educational level where ties are broken using age.
+```{r}
+salary %>% 
+  arrange(educational_level)
+```
+
+
+
+9.	Drop all the non-numeric variables in the tibble.
+```{r}
+salary %>% 
+  select_if(is.numeric)
+```
+
+
+
+10.	Find all employees with either less than 2 years work experience or an education level below 12.
+```{r}
+salary %>% 
+  filter(work_experience <2 | educational_level <12)
+```
+
+
+
+11.	Transform the salary variables so they measure how many 1000s of pounds each salary is.
+```{r}
+salary %>% 
+  mutate(
+        beginning_salary = beginning_salary/1000, 
+        current_salary = current_salary/1000)
+```
+
+
+
+12.	Find all the females employees with an employment category of 'security officer'.
+```{r}
+salary %>% 
+  filter(gender == "female", employment_category == "security officer")
+```
+
+
+
+# Pipes
+
+Again, answer these questions using the `salaries.csv` dataset:
+
+
+1.	Find the average salary per educational level, for educational levels of 16 and below. Arrange the results from highest salary to lowest. Answer using pipes.
+```{r}
+salary %>% 
+  group_by(educational_level) %>% 
+  summarise( avg_sal = mean(current_salary)) %>% 
+  filter(educational_level <= 16) %>% 
+  arrange(desc(avg_sal))
+```
+
+
+
+2.	Find the average salary for each gender in each employment category. Exclude any employees with less than 2 years of work experience. Answer using pipes.
+```{r}
+salary %>% 
+  group_by(gender) %>% 
+  filter(work_experience <2) %>% 
+  summarise(avg_sal = mean(current_salary)) 
+  
+```
+
+
+
+3.	For each employment category find the difference between the mean salary and the median salary. Arrange so that the greatest difference comes first. Answer using pipes. (The difference between mean salary and median 
+salary gives us a measure of how skewed salaries - we'll come on to this shortly!)
+```{r}
+salary %>% 
+  group_by(employment_category) %>% 
+  summarise(
+            avg_sal = round(mean(current_salary), 2), 
+            median_sal = median(current_salary)) %>% 
+  mutate(diff = avg_sal - median_sal) %>% 
+  arrange(desc(diff))
+```
+
+
+# Missing values exercise
+
+In this exercise we will be looking at the beer calorie data (dataset `beer.txt`). To read this data, use the `read_delim()` function, specifying `;` as the delimiter.
+
+
+
+1.	Find all the observations where the carbohydrates are missing.
+```{r}
+beer <- read_delim("data/beer.txt", delim = ";")
+```
+
+```{r}
+names(beer)
+```
+
+```{r}
+beer %>% 
+  filter(is.na(carbohydrates) | carbohydrates == "*")
+```
+
+```{r}
+beer_sub <- beer %>% 
+  mutate(
+    carbohydrates = as.numeric(gsub("g", "", carbohydrates)), 
+    percent = as.numeric(gsub("%", "", percent)),
+    calories = as.numeric(calories))
+
+glimpse(beer_sub)
+```
+
+```{r}
+beer_sub %>% 
+  filter(is.na(carbohydrates))
+```
+
+
+2.	Find all the observations where the brand is missing.
+```{r}
+beer_sub %>% 
+  filter(is.na(brand))
+```
+
+
+3.	What is different about the observations missing carbohydrates and the observations missing brand? To clean the data should we drop the rows missing brand or the rows missing carbohydrates?
+```{r}
+beer_clean <- beer_sub %>% 
+  drop_na(brand)
+```
+
+
+# Recoding excercise 
+
+Use the dataset `inmates.tsv` for these questions. Investigate a function to read data in this format.
+```{r}
+inmates <- read_tsv("data/inmates.tsv")
+```
+
+
+1. Change the 'M'/'F' values in gender to be 'Male'/'Female'.
+```{r}
+inmates %>% 
+  mutate(gender = if_else(gender == "M",
+                          "Male",
+                          "Female")) %>% 
+  distinct(gender)
+```
+
+
+2. For the race variable, everything is in capital letters, change each level to title case. Also combine 'AMER IND' and 'ASIAN' into an 'Other' category.
+```{r}
+inmates %>% 
+  mutate(race = str_to_title(race),
+         race = recode(race,
+                       "Amer Ind" = "Other",
+                       "Asian"    = "Other")) %>% 
+  distinct(race)
+```
+
+
+3. Make a new variable bond_level which is High whenever the bond for an inmate is above $1,000,000 and Normal otherwise.
+```{r}
+inmates_subset <- inmates %>% 
+  mutate(bond_level = case_when(
+    bond_amount > 1000000 ~ "High",
+    bond_amount < 1000000 ~ "Normal"
+  )) 
+```
+
+
+4. How many inmates have a high bond level?
+```{r}
+inmates_subset %>% 
+  count(bond_level) %>% 
+  filter(bond_level=="High")
+```
+
+
+
+5. Modify the detainer variable so that NONE, IMIGRATION and FEDERAL are in title case and all other levels are set to Other.
+```{r}
+inmates_subset %>% 
+  mutate(detainer = case_when(
+              detainer == "NONE" ~ "None",
+              detainer == "IMMIGRATION" ~ "Immigration",
+              detainer == "FEDERAL" ~ "Federal",
+              TRUE ~ "Other")) %>% 
+  count(detainer)
+```
