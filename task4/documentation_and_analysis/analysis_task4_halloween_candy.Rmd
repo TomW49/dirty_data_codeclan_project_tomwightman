@@ -8,11 +8,12 @@ output: html_document
 library(tidyverse)
 library(here)
 # reading in and assigning data
-halloween_candy <- read_csv(here("clean_data/halloween_candy_2015_to_2017.csv"))
+halloween_candy <- read_csv(here("clean_data/clean_halloween_candy_2015_to_2017.csv"))
 ```
 
 1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
 ```{r}
+# there was 640451 total ratings excl NA
 # using tally to negate the NA
 # 115079/755530 are NA's, maybe indicating that users were unable to answer or did not have an answer 
 halloween_candy %>% 
@@ -42,7 +43,7 @@ q3 <- halloween_candy %>%
   group_by(candy, reaction) %>%
   summarise(number = n(),.groups = "drop") 
 
-# JOY candy - pivot table in order to have reaction types as names to provide count
+# JOY candy - pivot table in ordeJor to have reaction types as names to provide count
 # any full sized candy bar
 q3 %>%
   pivot_wider(names_from = reaction, values_from = number) %>% 
@@ -89,11 +90,19 @@ reaction_as_number_candy_combined <- halloween_candy %>%
 5. What was the most popular candy bar by this rating system for each gender in the dataset?
 
 ```{r}
-# full sized candy bar
+# full sized candy bar, 1533 for male	
 reaction_as_number_candy_combined %>% 
+  filter(gender == "Male") %>% 
   group_by(candy) %>% 
-  summarise(rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating)
+  summarise(male_rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(male_rating)
+
+# full sized candy bar, 855 for female	
+reaction_as_number_candy_combined %>% 
+  filter(gender == "Female") %>% 
+  group_by(candy) %>% 
+  summarise(female_rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(female_rating)
 ```
 
 

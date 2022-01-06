@@ -28,6 +28,10 @@ The surveys them self ask the users to rate their opinion on several "candy" typ
 
 More information of the data sets can be found [here](https://www.scq.ubc.ca/so-much-candy-data-seriously/).
 
+Below is an infograpgh brining the data to life in a quirky yet informative fashion.
+
+![](https://boingboing.net/wp-content/uploads/2017/10/candyhierarchy2017-1.jpg)
+
 # Assumptions
 
 Some of the assumptions I made during the cleaning and analysis phase of the data are as follows:
@@ -45,6 +49,8 @@ I used `tidyverse` and `janitor` packages to read in and clean the variable name
 
 ### Cleaning `boing-boing-candy-2015.xlsx`
 
+I chose to pivot all of the data sets in long format for ease of wrangling and manipulation.
+
 I used the below code to remove the "timestamp" variable and replace it with the year in order to identify when joining all three data sets. I also renamed two columns in order to better accommodate the join.
 
 ```{r, eval = FALSE}
@@ -55,18 +61,21 @@ pivot_prep_candy15 <- bbcandy2015 %>%
   add_column(year  = 2015, .before = 1)
 ```
 
-I then pivoted the prepared data above using: 
+I then pivoted the prepared data above using:
+
 ```{r, eval = FALSE}
 pivot_candy15 <- pivot_prep_candy15 %>% 
     pivot_longer(cols = 4:124, 
                  names_to = "candy", 
                  values_to = "reaction")
 ```
+
 I continued programming this to remove all self identified non-edible variables including medication. The list can be seen in the `cleaning_script_task4_halloween_candy.csv`
 
 ### Cleaning `boing-boing-candy-2016.xlsx`
 
 Again a similar process to the above with slight changes in order to facilitate the merging of all data sets later.
+
 ```{r, eval = FALSE}
 pivot_prep_candy16 <- bbcandy2016 %>%
   select(-timestamp) %>% 
@@ -77,7 +86,8 @@ pivot_prep_candy16 <- bbcandy2016 %>%
          province   = which_state_province_county_do_you_live_in) %>%   
   add_column(year = 2016, .before = 1) 
 ```
-The pivot of the data had the same process as 2015's pivot code, however it had additional values I wanted to remove such as "person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes".
+
+The pivot of the data had the same process as 2015's pivot code, however it had additional values I wanted to remove such as "person_of_interest_season_3\_dvd_box_set_not_including_disc_4\_with_hilarious_outtakes".
 
 ### Cleaning `boing-boing-candy-2017.xlsx`
 
@@ -88,7 +98,8 @@ names(bbcandy2017) = gsub(pattern = "^q[0-9]*_", replacement = "",
                           x = names(bbcandy2017))
 ```
 
-I then used THE same process as for the other years to prepare data set for pivot. I also renamed "anonymous_brown...." to mary_janes in order for that data to match with the other tables to give more accurate analysis.
+I then used the same process as for the other years to prepare data set for a pivot. I also renamed "anonymous_brown...." to mary_janes in order for that data to match with the other tables to give more accurate analysis.
+
 ```{r, eval = FALSE}
 pivot_prep_candy17 <- bbcandy2017 %>%
   select(-c(internal_id, 110:120)) %>% 
@@ -100,6 +111,7 @@ pivot_prep_candy17 <- bbcandy2017 %>%
 ### Combining cleaned data sets and further cleaning
 
 When I had combined them, I realised that I had missed some duplicates and errors. The below code enables more standardisation and more accurate results. I also used this oppurtunity to re-order the columns for ease of use.
+
 ```{r, eval = FALSE}
 # joining all three cleaned datasets
 candy_combined <- bind_rows(pivot_candy15, 
@@ -119,6 +131,7 @@ candy_combined <- candy_combined%>%
 I then had to create a pattern to identify the United Kingdom and the United States of America and replace them with a desired value. This was achieved by grouping the countries and extracting them as a list using `pull()`. I then had to delete countries in my list that I believed did not identify as the United States of America, and separate them with the `|` logical operator. I used this process for the United Kingdom also. Some specific country values were either not caught, or caught in a "usa" or "uk" process, therefore manual placement had to be made.
 
 I then used the below code to carry out the "re-coding":
+
 ```{r, eval = FALSE}
 # lowering case of country, recoding uk, usa, canada and other data country data only
 candy_combined <-  candy_combined %>% 
@@ -138,6 +151,7 @@ candy_combined <-  candy_combined %>%
 ```
 
 Lastly, the age column had to be cleaned as it was in character format and also held unrealistic ages of 0 years and 500+ years old.
+
 ```{r, eval = FALSE}
 # cleaning age column, turning into integer for manipulation 
 # using data only from 4 to 100 year olds
@@ -148,11 +162,65 @@ candy_combined <- candy_combined %>%
   drop_na(age) 
 ```
 
-
 # Analysis
 
----The answers to the questions presented in the task brief
+The questions to be answered from the project are as follows:
+
+### 1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don't count missing values)
+
+There was a total of 640451 ratings provided of either "JOY", "MEH" or "DESPAIR".
+
+I did find that the number of NA's, 115079, was a fairly large amount of unused ratings. A portion of these are due to some candy's not being included in the other annual data sets, therefore being converted to NA's.
+
+### 2. What was the average age of people who are going out trick or treating and the average age of people not going trick or treating?
+
+The average age of people going trick or treating is 35. The average age of people not going trick or treating is 39.
+
+It is interesting to see that the average age of people going out trick or treating is 35; this would make sense in my opinion as it would normally be the parents of children going out on Halloween in order to look after them. Also, I don't believe children would be interested of have access to a questionnaire such as this.
+
+The data also showed that the majority of people tended to stop going out trick or treating at 39, potentially showing on average a 4 year period where adults take their children out.
+
+### 3. For each of joy, despair and meh, which candy bar received the most of these ratings?
+
+An important factor to consider is that in the 2015 data there was no "MEH" variable for the users to select, so data may be unbalanced,
+
+-   "JOY" - Any full sized candy bar
+-   "MEH" - Lollipops
+-   "DESPAIR" - Mary Janes
+
+I would say that these results fall in line with my own opinions.
+
+### 4. How many people rated Starburst as despair?
+
+1864. As it says on the tin.
+
+### 5. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+For this and the next two questions, I counted DESPAIR as -1, JOY as +1 and MEH as 0.
+
+The most popular candy bar was males was "Any full sized candy bar", with a count of 1533.
+
+The most popular candy bar was females was "Any full sized candy bar", with a count of 855.
+
+### 6. What was the most popular candy bar in each year?
+
+-   2015 - "Any full sized candy bar", with a count of 4392.
+-   2016 - "Any full sized candy bar", with a count of 982.
+-   2017 - "Any full sized candy bar", with a count of 1497.
+
+I think I see a pattern here...
+
+### 7. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+
+-   US - "Any full sized candy bar", with a count of 2122.
+-   Canada - "Any full sized candy bar", with a count of 248.
+-   UK - "Any full sized candy bar", with a count of 33 (also matched with "Lindt Truffle, Rolos and Toblerone).
+-   Other - "Any full sized candy bar", with a count of 4468.
 
 # Conclusions
 
----Any other interesting analyses or conclusions you come across.
+Through reading more information on the data sets and interrogating other users analyses, it was interesting to see that "cash or other forms of legal tender" rated number 1 rated item for people from the United Kingdom - I had removed this from my data.
+
+It was also interesting to see that the average age of people going out trick or treating was 35; this would make sense in my opinion as mentioned before this would be normally the parents of children going out on Halloween.
+
+The data also showed that the majority of people tended to stop going out trick or treating at 39, potentially showing on average a 4 year period where adults take their children out.
