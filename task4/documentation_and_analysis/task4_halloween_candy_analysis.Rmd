@@ -16,11 +16,6 @@ bbcandy2017 <- janitor::clean_names(
                readxl::read_xlsx("../raw_data/boing-boing-candy-2017.xlsx"))
 ```
 
-```{r}
-# comparing variables of all datasets to find similarites 
-janitor::compare_df_cols(bbcandy2017, bbcandy2016, bbcandy2015) %>% 
-  view()
-```   
 
 ```{r}
 # 2015 cleaning
@@ -217,12 +212,6 @@ pivot_candy17.1 <- pivot_candy17 %>%
 ```
 
 ```{r}
-# comparing subsets 
-janitor::compare_df_cols(pivot_candy15.1, pivot_candy16.1, pivot_candy17.1) %>% 
-  view()
-```
-
-```{r}
 # joining datasets
 candy_combined1.0 <- bind_rows(pivot_candy15.1, pivot_candy16.1, pivot_candy17.1) %>% 
   select(1,3,6,2,7,8, everything())
@@ -356,12 +345,68 @@ reaction_as_number_candy_combined <- age_fix_candy_combined1.3 %>%
 5. What was the most popular candy bar by this rating system for each gender in the dataset?
 
 ```{r}
+# full sized candy bar
 reaction_as_number_candy_combined %>% 
   group_by(candy) %>% 
+  summarise(rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating)
 ```
 
 
 6. What was the most popular candy bar in each year?
+```{r}
+# any full sized candy bar - 4392
+reaction_as_number_candy_combined %>% 
+  filter(year == "2015") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2015 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2015)
+
+# any full sized candy bar - 982
+reaction_as_number_candy_combined %>% 
+  filter(year == "2016") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2016 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2016)
+
+# any full sized candy bar - 1497
+reaction_as_number_candy_combined %>% 
+  filter(year == "2017") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2017 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2017)
+```
+
 
 7. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+
+```{r}
+# any_full_sized_candy_bar	2122	
+reaction_as_number_candy_combined %>% 
+  filter(country == "usa") %>% 
+  group_by(candy) %>% 
+  summarise(rating_us = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_us)
+
+# any_full_sized_candy_bar	248	
+reaction_as_number_candy_combined %>% 
+  filter(country == "canada") %>% 
+  group_by(candy) %>% 
+  summarise(rating_canada = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_canada)
+
+# any_full_sized_candy_bar	33, lindt_truffle	33, rolos	33, tolberone_something_or_other	33	
+reaction_as_number_candy_combined %>% 
+  filter(country == "uk") %>% 
+  group_by(candy) %>% 
+  summarise(rating_uk = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_uk)
+
+# any_full_sized_candy_bar	4468	
+reaction_as_number_candy_combined %>% 
+  filter(country == "other") %>% 
+  group_by(candy) %>% 
+  summarise(rating_other = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_other)
+```
 
