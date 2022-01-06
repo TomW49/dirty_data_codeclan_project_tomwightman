@@ -1,5 +1,5 @@
 ---
-title: "Documentation: clean_halloween_candy_2015_to_2017"
+title: "Documentation: task_4_halloween_candy"
 output:
   html_document: 
     number_sections: no

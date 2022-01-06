@@ -5,7 +5,9 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-decathlon <- read_rds("../clean_data/decathlon_cleaned.rds")
+library(here)
+
+decathlon <- read_rds(here("clean_data/clean_decathlon.rds"))
 ```
 
 

@@ -1,7 +1,9 @@
 library(tidyverse)
+library(here)
+library(tibble)
 
 # cleaning variables
-decathlon <- janitor::clean_names(read_rds("raw_data/decathlon.rds"))
+decathlon <- janitor::clean_names(read_rds(here("raw_data/decathlon.rds")))
 
 # creating name column for row names and standardising names
 decathlon <- decathlon %>% 
@@ -9,7 +11,7 @@ decathlon <- decathlon %>%
   mutate(name = str_to_title(name))
 
 # creating rds file of cleaned data
-write_rds(decathlon, "decathlon_cleaned.rds")
+write_rds(decathlon, "clean_data/clean_decathlon.rds")
 
 
 
