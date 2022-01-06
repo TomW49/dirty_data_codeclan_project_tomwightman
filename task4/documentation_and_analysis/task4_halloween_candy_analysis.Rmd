@@ -229,6 +229,16 @@ candy_combined1.0 <- bind_rows(pivot_candy15.1, pivot_candy16.1, pivot_candy17.1
 ```
 
 ```{r}
+# cleaning spelling errors
+candy_combined1.0 <- candy_combined1.0%>% 
+  mutate(candy = case_when(
+      candy == "boxo_raisins" ~ "box_o_raisins",
+      candy == "sweetums_a_friend_to_diabetes" ~ "sweetums",
+      candy == "anonymous_brown_globs_that_come_in_black_and_orange_wrappers" ~ "mary_janes",
+      TRUE ~ candy)) 
+```
+
+```{r}
 # creating pattern for usa and uk country to clean 
 usa_pattern <- c("usausausa|usas|usaa|usa? hard to tell anymore..|usa!!!!!!|usa! usa!|usa!|usa usa usa!!!!|usa usa usa usa|usa usa usa|usa (i think but it's an election year so who can really tell)|usa|usa|units states|united ststes|united      ststes|usa|us|usa|united states of america|us|united states|united states|us|u.s.|u.s.a.|united states of america|america|america|u.s.|murica|unites states|us of a|united state|usa! usa! usa!|merica|the united states|united sates|united stated|ussa|'merica|ahem....amerca|n. america|the best one - usa|the united states of america|the yoo ess of aaayyyyyy|u s|u s a|u.s.|u.s.a.|unied states|unhinged states|unied states|unite states|united  states of america|united staes|united statea|united states|united states|united statss|united stetes|	united ststes|united ststes|units states|usa|usa|usa (i think but it's an election year so who can really tell)|usa usa usa|usa usa usa usa|usa usa usa!!!!|usa!|usa! usa!|usa!!!!!!|usa? hard to tell anymore..|usaa|usas|usausausa|murrika|north carolina|california|new jersey|new york|pittsburgh")
 
@@ -289,25 +299,67 @@ age_fix_candy_combined1.3 %>%
 age_fix_candy_combined1.3 %>% 
   filter(going_out == "No") %>% 
   summarise(avg_age_no = round(mean(age)))
-
-age_fix_candy_combined1.3 %>% 
-  group_by(age) %>% 
-  summarise(n())
-  
-
 ```
 
 3. For each of joy, despair and meh, which candy bar received the most of these ratings?
 ```{r}
+# there is no meh in 2015 - this is a consideration
+# create table to interrogate 
+q3 <- age_fix_candy_combined1.3 %>% 
+  group_by(candy, reaction) %>%
+  summarise(number = n(),.groups = "drop") 
 
+# JOY candy - pivot table in order to have reaction types as names to provide count
+# any full sized candy bar
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, JOY) %>% 
+  slice_max(JOY)
+
+# DESPAIR candy - pivot table in order to have reaction types as names to provide count
+# mary janes
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, DESPAIR) %>% 
+  slice_max(DESPAIR)
+
+# MEH candy - pivot table in order to have reaction types as names to provide count
+# lollipops
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, MEH) %>% 
+  slice_max(MEH)
+```
+
+4. How many people rated Starburst as despair?
+```{r}
+# 1864
+q3 %>% 
+  pivot_wider(names_from = reaction, values_from = number) %>%
+  select(candy, DESPAIR) %>% 
+  filter(candy == "starburst")
 ```
 
 
-4. How many people rated Starburst as despair?
-
 For the next three questions, count despair as -1, joy as +1 and meh as 0.
 
+```{r}
+reaction_as_number_candy_combined <- age_fix_candy_combined1.3 %>% 
+ mutate(reaction_as_number = case_when(
+      reaction == "JOY"     ~  1,
+      reaction == "DESPAIR" ~ -1,
+      reaction == "MEH"     ~  0
+    ))
+```
+
+
 5. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+```{r}
+reaction_as_number_candy_combined %>% 
+  group_by(candy) %>% 
+```
+
 
 6. What was the most popular candy bar in each year?
 
