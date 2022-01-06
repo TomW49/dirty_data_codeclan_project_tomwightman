@@ -1,34 +1,28 @@
----
-title: "task4_halloween_candy_analysis"
-output: html_document
----
-
-```{r}
+# loading packages
 library(tidyverse)
+library(here)
 
+# reading in dirty data, cleaning and assigning
 bbcandy2015 <- janitor::clean_names(
-               readxl::read_xlsx("../raw_data/boing-boing-candy-2015.xlsx"))
-
+  readxl::read_xlsx(here("raw_data/boing-boing-candy-2015.xlsx")))
 bbcandy2016 <- janitor::clean_names(
-               readxl::read_xlsx("../raw_data/boing-boing-candy-2016.xlsx"))
-
+  readxl::read_xlsx(here("raw_data/boing-boing-candy-2016.xlsx")))
 bbcandy2017 <- janitor::clean_names(
-               readxl::read_xlsx("../raw_data/boing-boing-candy-2017.xlsx"))
-```
+  readxl::read_xlsx(here("raw_data/boing-boing-candy-2017.xlsx")))
 
-
-```{r}
 # 2015 cleaning
 # renaming variables 
-# adding in year column to clarify when joining
-pivot_candy15 <- bbcandy2015 %>%
+# removing timestamp column
+# adding in year column to identify when joining
+pivot_prep_candy15 <- bbcandy2015 %>%
   select(-timestamp) %>% 
   rename(going_out = are_you_going_actually_going_trick_or_treating_yourself,
          age       = how_old_are_you) %>%   
   add_column(year = 2015, .before = 1) 
 
+# 2015 cleaning
 # pivotting data to enable join with others, and removing non-candy values
-pivot_candy15.1 <- pivot_candy15 %>% 
+pivot_candy15 <- pivot_prep_candy15 %>% 
   pivot_longer(cols = 4:124, names_to = "candy", values_to = "reaction") %>% 
   filter(!candy %in% c(
     "cash_or_other_forms_of_legal_tender",
@@ -70,15 +64,13 @@ pivot_candy15.1 <- pivot_candy15 %>%
     "what_is_your_favourite_font",
     "if_you_squint_really_hard_the_words_intelligent_design_would_look_like",
     "which_day_do_you_prefer_friday_or_sunday")
-      )
-```
+   )
 
-
-```{r}
 # 2016 cleaning
 # renaming variables 
-# adding in year column to clarify when joining
-pivot_candy16 <- bbcandy2016 %>%
+# removing timestamp column
+# adding in year column to identify when joining
+pivot_prep_candy16 <- bbcandy2016 %>%
   select(-timestamp) %>% 
   rename(going_out  = are_you_going_actually_going_trick_or_treating_yourself,
          age        = how_old_are_you,
@@ -87,8 +79,9 @@ pivot_candy16 <- bbcandy2016 %>%
          province   = which_state_province_county_do_you_live_in) %>%   
   add_column(year = 2016, .before = 1) 
 
+# 2016 cleaning
 # pivotting data to enable join with others, and removing non-candy values
-pivot_candy16.1 <- pivot_candy16 %>% 
+pivot_candy16 <- pivot_prep_candy16 %>% 
   pivot_longer(cols = 7:123, names_to = "candy", values_to = "reaction") %>% 
   filter(!candy %in% c(
     "cash_or_other_forms_of_legal_tender",
@@ -131,33 +124,33 @@ pivot_candy16.1 <- pivot_candy16 %>%
     "what_is_your_favourite_font",
     "if_you_squint_really_hard_the_words_intelligent_design_would_look_like",
     "which_day_do_you_prefer_friday_or_sunday",
-      "chardonnay", 
-      "person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes",
-      "please_leave_any_witty_snarky_or_thoughtful_remarks_or_comments_regarding_your_choices",
-      "what_is_your_favourite_font",
-      "do_you_eat_apples_the_correct_way_east_to_west_side_to_side_or_do_you_eat_them_like_a_freak_of_nature_south_to_north_bottom_to_top",
-      "when_you_see_the_above_image_of_the_4_different_websites_which_one_would_you_most_likely_check_out_please_be_honest",
-      "york_peppermint_patties_ignore")
-      )
-```
+    "chardonnay", 
+    "person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes",
+    "please_leave_any_witty_snarky_or_thoughtful_remarks_or_comments_regarding_your_choices",
+    "what_is_your_favourite_font",
+    "do_you_eat_apples_the_correct_way_east_to_west_side_to_side_or_do_you_eat_them_like_a_freak_of_nature_south_to_north_bottom_to_top",
+    "when_you_see_the_above_image_of_the_4_different_websites_which_one_would_you_most_likely_check_out_please_be_honest",
+    "york_peppermint_patties_ignore")
+  )
 
-```{r}
 # cleaning 2017
 # This strips out the "q" from the beginning of the column names
 names(bbcandy2017) = gsub(pattern = "^q[0-9]*_", replacement = "", 
-                           x = names(bbcandy2017))
+                          x = names(bbcandy2017))
 
-# removing variables not required for analysis questions
-# editing variable names for ease of reference
-# adding in year column to clarify when joining
-pivot_candy17 <- bbcandy2017 %>%
+# 2016 cleaning
+# renaming variables - mary_janes in order to match other datasets
+# removing internal_id column
+# adding in year column to identify when joining
+pivot_prep_candy17 <- bbcandy2017 %>%
   select(-c(internal_id, 110:120)) %>% 
   rename(province    = state_province_county_etc,
          mary_janes  = anonymous_brown_globs_that_come_in_black_and_orange_wrappers_a_k_a_mary_janes) %>%   
   add_column(year = 2017, .before = 1) 
 
+# cleaning 2017
 # pivotting data to enable join with others, and removing non-candy values
-pivot_candy17.1 <- pivot_candy17 %>% 
+pivot_candy17 <- pivot_prep_candy17 %>% 
   pivot_longer(cols = 7:109, names_to = "candy", values_to = "reaction") %>% 
   filter(!candy %in% c(
     "cash_or_other_forms_of_legal_tender",
@@ -200,43 +193,55 @@ pivot_candy17.1 <- pivot_candy17 %>%
     "what_is_your_favourite_font",
     "if_you_squint_really_hard_the_words_intelligent_design_would_look_like",
     "which_day_do_you_prefer_friday_or_sunday",
-      "chardonnay", 
-      "person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes",
-      "please_leave_any_witty_snarky_or_thoughtful_remarks_or_comments_regarding_your_choices",
-      "what_is_your_favourite_font",
-      "do_you_eat_apples_the_correct_way_east_to_west_side_to_side_or_do_you_eat_them_like_a_freak_of_nature_south_to_north_bottom_to_top",
-      "when_you_see_the_above_image_of_the_4_different_websites_which_one_would_you_most_likely_check_out_please_be_honest",
-      "york_peppermint_patties_ignore",
-         "real_housewives_of_orange_county_season_9_blue_ray")
-      )
-```
+    "chardonnay", 
+    "person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes",
+    "please_leave_any_witty_snarky_or_thoughtful_remarks_or_comments_regarding_your_choices",
+    "what_is_your_favourite_font",
+    "do_you_eat_apples_the_correct_way_east_to_west_side_to_side_or_do_you_eat_them_like_a_freak_of_nature_south_to_north_bottom_to_top",
+    "when_you_see_the_above_image_of_the_4_different_websites_which_one_would_you_most_likely_check_out_please_be_honest",
+    "york_peppermint_patties_ignore",
+    "real_housewives_of_orange_county_season_9_blue_ray")
+  )
 
-```{r}
-# joining datasets
-candy_combined1.0 <- bind_rows(pivot_candy15.1, pivot_candy16.1, pivot_candy17.1) %>% 
+# joining all three cleaned datasets
+candy_combined <- bind_rows(pivot_candy15, 
+                            pivot_candy16, 
+                            pivot_candy17) %>% 
   select(1,3,6,2,7,8, everything())
-```
 
-```{r}
-# cleaning spelling errors
-candy_combined1.0 <- candy_combined1.0%>% 
+# cleaning further spelling errors for standardisation 
+candy_combined <- candy_combined%>% 
   mutate(candy = case_when(
-      candy == "boxo_raisins" ~ "box_o_raisins",
-      candy == "sweetums_a_friend_to_diabetes" ~ "sweetums",
-      candy == "anonymous_brown_globs_that_come_in_black_and_orange_wrappers" ~ "mary_janes",
-      TRUE ~ candy)) 
-```
+    candy == "boxo_raisins" ~ "box_o_raisins",
+    candy == "sweetums_a_friend_to_diabetes" ~ "sweetums",
+    candy == "anonymous_brown_globs_that_come_in_black_and_orange_wrappers" ~ "mary_janes",
+    TRUE ~ candy)) 
 
-```{r}
-# creating pattern for usa and uk country to clean 
-usa_pattern <- c("usausausa|usas|usaa|usa? hard to tell anymore..|usa!!!!!!|usa! usa!|usa!|usa usa usa!!!!|usa usa usa usa|usa usa usa|usa (i think but it's an election year so who can really tell)|usa|usa|units states|united ststes|united      ststes|usa|us|usa|united states of america|us|united states|united states|us|u.s.|u.s.a.|united states of america|america|america|u.s.|murica|unites states|us of a|united state|usa! usa! usa!|merica|the united states|united sates|united stated|ussa|'merica|ahem....amerca|n. america|the best one - usa|the united states of america|the yoo ess of aaayyyyyy|u s|u s a|u.s.|u.s.a.|unied states|unhinged states|unied states|unite states|united  states of america|united staes|united statea|united states|united states|united statss|united stetes|	united ststes|united ststes|units states|usa|usa|usa (i think but it's an election year so who can really tell)|usa usa usa|usa usa usa usa|usa usa usa!!!!|usa!|usa! usa!|usa!!!!!!|usa? hard to tell anymore..|usaa|usas|usausausa|murrika|north carolina|california|new jersey|new york|pittsburgh")
-
+# creating pattern for usa and uk country to identify and standardise  
+usa_pattern <- c("usausausa|usas|usaa|usa? hard to tell anymore..|usa!!!!!!
+                 |usa! usa!|usa!|usa usa usa!!!!|usa usa usa usa|usa usa usa
+                 |usa (i think but it's an election year so who can really tell)
+                 |usa|usa|units states|united ststes|united      ststes|usa|us
+                 |usa|united states of america|us|united states|united states|us
+                 |u.s.|u.s.a.|united states of america|america|america|u.s.
+                 |murica|unites states|us of a|united state|usa! usa! usa!
+                 |merica|the united states|united sates|united stated|ussa
+                 |'merica|ahem....amerca|n. america|the best one - usa
+                 |the united states of america|the yoo ess of aaayyyyyy|u s
+                 |u s a|u.s.|u.s.a.|unied states|unhinged states|unied states
+                 |unite states|united  states of america|united staes
+                 |united statea|united states|united states|united statss
+                 |united stetes|	united ststes|united ststes|units states|usa
+                 |usa
+                 |usa (i think but it's an election year so who can really tell)
+                 |usa usa usa|usa usa usa usa|usa usa usa!!!!|usa!|usa! usa!
+                 |usa!!!!!!|usa? hard to tell anymore..|usaa|usas|usausausa
+                 |murrika|north carolina|california|new jersey|new york
+                 |pittsburgh")
 uk_pattern <- c("endland|england|scotland|u.k.|uk|united kindom|united kingdom")
-```
 
-```{r}
-# lowering case of country, making uk, usa, canada and other data only
-country_fix_candy_combined1.2 <-  candy_combined1.0 %>% 
+# lowering case of country, recoding uk, usa, canada and other data country data only
+candy_combined <-  candy_combined %>% 
   mutate(country = str_to_lower(country)) %>% 
   mutate(country = case_when(
     str_detect(country, "not[\\s]{1,}") ~ "other",
@@ -250,163 +255,14 @@ country_fix_candy_combined1.2 <-  candy_combined1.0 %>%
     is.na(country) == TRUE ~ "other",
     TRUE ~ "other")
   ) 
-```
 
-```{r}
-# cleaning age column, turning into integer and keeping data from 100 year olds and less
-age_fix_candy_combined1.3 <- country_fix_candy_combined1.2 %>%
+# cleaning age column, turning into integer for manipulation 
+# using data only from 4 to 100 year olds
+candy_combined <- candy_combined %>%
   mutate(age = as.integer(age)) %>% 
   mutate(age = ifelse(age <= 100, age, NA_integer_)) %>% 
   mutate(age = ifelse(age >= 4, age, NA_integer_)) %>% 
   drop_na(age) 
-```
 
-
-1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
-```{r}
-# using tally to negate the NA
-# 115079/755530 are NA's, maybe indicating that users were unable to answer or did not have an answer 
-
-age_fix_candy_combined1.3 %>% 
-  group_by(reaction) %>% 
-  count()
-
-age_fix_candy_combined1.3 %>% 
-  group_by(reaction) %>% 
-  tally(!is.na(reaction)) %>% 
-  summarise(total_ratings = sum(n))
-```
-
-2. What was the average age of people who are going out trick or treating and the average age of people not going trick or treating?
-```{r}
-# 35 years - could be because the users childrend are now generally at the age to go trick or treating 
-age_fix_candy_combined1.3 %>% 
-  filter(going_out == "Yes") %>% 
-  summarise(avg_age_yes = round(mean(age)))
-
-# 39 years - could be because the users childrend are now generally at the age to stop going trick or treating 
-age_fix_candy_combined1.3 %>% 
-  filter(going_out == "No") %>% 
-  summarise(avg_age_no = round(mean(age)))
-```
-
-3. For each of joy, despair and meh, which candy bar received the most of these ratings?
-```{r}
-# there is no meh in 2015 - this is a consideration
-# create table to interrogate 
-q3 <- age_fix_candy_combined1.3 %>% 
-  group_by(candy, reaction) %>%
-  summarise(number = n(),.groups = "drop") 
-
-# JOY candy - pivot table in order to have reaction types as names to provide count
-# any full sized candy bar
-q3 %>%
-  pivot_wider(names_from = reaction, values_from = number) %>% 
-  select(candy, JOY) %>% 
-  slice_max(JOY)
-
-# DESPAIR candy - pivot table in order to have reaction types as names to provide count
-# mary janes
-q3 %>%
-  pivot_wider(names_from = reaction, values_from = number) %>% 
-  select(candy, DESPAIR) %>% 
-  slice_max(DESPAIR)
-
-# MEH candy - pivot table in order to have reaction types as names to provide count
-# lollipops
-q3 %>%
-  pivot_wider(names_from = reaction, values_from = number) %>% 
-  select(candy, MEH) %>% 
-  slice_max(MEH)
-```
-
-4. How many people rated Starburst as despair?
-```{r}
-# 1864
-q3 %>% 
-  pivot_wider(names_from = reaction, values_from = number) %>%
-  select(candy, DESPAIR) %>% 
-  filter(candy == "starburst")
-```
-
-
-For the next three questions, count despair as -1, joy as +1 and meh as 0.
-
-```{r}
-reaction_as_number_candy_combined <- age_fix_candy_combined1.3 %>% 
- mutate(reaction_as_number = case_when(
-      reaction == "JOY"     ~  1,
-      reaction == "DESPAIR" ~ -1,
-      reaction == "MEH"     ~  0
-    ))
-```
-
-
-5. What was the most popular candy bar by this rating system for each gender in the dataset?
-
-```{r}
-# full sized candy bar
-reaction_as_number_candy_combined %>% 
-  group_by(candy) %>% 
-  summarise(rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating)
-```
-
-
-6. What was the most popular candy bar in each year?
-```{r}
-# any full sized candy bar - 4392
-reaction_as_number_candy_combined %>% 
-  filter(year == "2015") %>% 
-  group_by(candy) %>% 
-  summarise(rating_2015 = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_2015)
-
-# any full sized candy bar - 982
-reaction_as_number_candy_combined %>% 
-  filter(year == "2016") %>% 
-  group_by(candy) %>% 
-  summarise(rating_2016 = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_2016)
-
-# any full sized candy bar - 1497
-reaction_as_number_candy_combined %>% 
-  filter(year == "2017") %>% 
-  group_by(candy) %>% 
-  summarise(rating_2017 = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_2017)
-```
-
-
-7. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
-
-```{r}
-# any_full_sized_candy_bar	2122	
-reaction_as_number_candy_combined %>% 
-  filter(country == "usa") %>% 
-  group_by(candy) %>% 
-  summarise(rating_us = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_us)
-
-# any_full_sized_candy_bar	248	
-reaction_as_number_candy_combined %>% 
-  filter(country == "canada") %>% 
-  group_by(candy) %>% 
-  summarise(rating_canada = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_canada)
-
-# any_full_sized_candy_bar	33, lindt_truffle	33, rolos	33, tolberone_something_or_other	33	
-reaction_as_number_candy_combined %>% 
-  filter(country == "uk") %>% 
-  group_by(candy) %>% 
-  summarise(rating_uk = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_uk)
-
-# any_full_sized_candy_bar	4468	
-reaction_as_number_candy_combined %>% 
-  filter(country == "other") %>% 
-  group_by(candy) %>% 
-  summarise(rating_other = sum(reaction_as_number, na.rm = TRUE)) %>% 
-  slice_max(rating_other)
-```
+write_csv(candy_combined, ("clean_data/halloween_candy_2015_to_2017.csv"))
 

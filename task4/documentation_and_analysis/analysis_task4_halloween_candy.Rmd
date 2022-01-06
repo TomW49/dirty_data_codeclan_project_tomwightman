@@ -1,0 +1,156 @@
+---
+title: "task4_halloween_candy_analysis"
+output: html_document
+---
+
+```{r}
+# loading in required libraries
+library(tidyverse)
+library(here)
+# reading in and assigning data
+halloween_candy <- read_csv(here("clean_data/halloween_candy_2015_to_2017.csv"))
+```
+
+1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
+```{r}
+# using tally to negate the NA
+# 115079/755530 are NA's, maybe indicating that users were unable to answer or did not have an answer 
+halloween_candy %>% 
+  group_by(reaction) %>% 
+  tally(!is.na(reaction)) %>% 
+  summarise(total_ratings = sum(n))
+```
+
+2. What was the average age of people who are going out trick or treating and the average age of people not going trick or treating?
+```{r}
+# 35 years - could be because the users children are now generally at the age to go trick or treating 
+halloween_candy %>% 
+  filter(going_out == "Yes") %>% 
+  summarise(avg_age_yes = round(mean(age)))
+
+# 39 years - could be because the users childrend are now generally at the age to stop going trick or treating 
+halloween_candy %>% 
+  filter(going_out == "No") %>% 
+  summarise(avg_age_no = round(mean(age)))
+```
+
+3. For each of joy, despair and meh, which candy bar received the most of these ratings?
+```{r}
+# there is no meh in 2015 - this is a consideration
+# create table to interrogate 
+q3 <- halloween_candy %>% 
+  group_by(candy, reaction) %>%
+  summarise(number = n(),.groups = "drop") 
+
+# JOY candy - pivot table in order to have reaction types as names to provide count
+# any full sized candy bar
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, JOY) %>% 
+  slice_max(JOY)
+
+# DESPAIR candy - pivot table in order to have reaction types as names to provide count
+# mary janes
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, DESPAIR) %>% 
+  slice_max(DESPAIR)
+
+# MEH candy - pivot table in order to have reaction types as names to provide count
+# lollipops
+q3 %>%
+  pivot_wider(names_from = reaction, values_from = number) %>% 
+  select(candy, MEH) %>% 
+  slice_max(MEH)
+```
+
+4. How many people rated Starburst as despair?
+```{r}
+# 1864
+q3 %>% 
+  pivot_wider(names_from = reaction, values_from = number) %>%
+  select(candy, DESPAIR) %>% 
+  filter(candy == "starburst")
+```
+
+
+For the next three questions, count despair as -1, joy as +1 and meh as 0.
+
+```{r}
+reaction_as_number_candy_combined <- halloween_candy %>% 
+ mutate(reaction_as_number = case_when(
+      reaction == "JOY"     ~  1,
+      reaction == "DESPAIR" ~ -1,
+      reaction == "MEH"     ~  0
+    ))
+```
+
+
+5. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+```{r}
+# full sized candy bar
+reaction_as_number_candy_combined %>% 
+  group_by(candy) %>% 
+  summarise(rating = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating)
+```
+
+
+6. What was the most popular candy bar in each year?
+```{r}
+# any full sized candy bar - 4392
+reaction_as_number_candy_combined %>% 
+  filter(year == "2015") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2015 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2015)
+
+# any full sized candy bar - 982
+reaction_as_number_candy_combined %>% 
+  filter(year == "2016") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2016 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2016)
+
+# any full sized candy bar - 1497
+reaction_as_number_candy_combined %>% 
+  filter(year == "2017") %>% 
+  group_by(candy) %>% 
+  summarise(rating_2017 = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_2017)
+```
+
+
+7. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+
+```{r}
+# any_full_sized_candy_bar	2122	
+reaction_as_number_candy_combined %>% 
+  filter(country == "usa") %>% 
+  group_by(candy) %>% 
+  summarise(rating_us = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_us)
+
+# any_full_sized_candy_bar	248	
+reaction_as_number_candy_combined %>% 
+  filter(country == "canada") %>% 
+  group_by(candy) %>% 
+  summarise(rating_canada = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_canada)
+
+# any_full_sized_candy_bar	33, lindt_truffle	33, rolos	33, tolberone_something_or_other	33	
+reaction_as_number_candy_combined %>% 
+  filter(country == "uk") %>% 
+  group_by(candy) %>% 
+  summarise(rating_uk = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_uk)
+
+# any_full_sized_candy_bar	4468	
+reaction_as_number_candy_combined %>% 
+  filter(country == "other") %>% 
+  group_by(candy) %>% 
+  summarise(rating_other = sum(reaction_as_number, na.rm = TRUE)) %>% 
+  slice_max(rating_other)
+```
+
