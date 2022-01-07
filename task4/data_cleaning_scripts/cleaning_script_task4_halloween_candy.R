@@ -238,7 +238,7 @@ usa_pattern <- c("usausausa|usas|usaa|usa? hard to tell anymore..|usa!!!!!!
                  |usa!!!!!!|usa? hard to tell anymore..|usaa|usas|usausausa
                  |murrika|north carolina|california|new jersey|new york
                  |pittsburgh")
-uk_pattern <- c("endland|england|scotland|u.k.|uk|united kindom|united kingdom")
+uk_pattern <- c("endland|england|scotland|u\\.k\\.|uk|united kindom|united kingdom")
 
 # lowering case of country, recoding uk, usa, canada and other data country data only
 candy_combined <-  candy_combined %>% 
@@ -247,7 +247,6 @@ candy_combined <-  candy_combined %>%
     str_detect(country, "not[\\s]{1,}") ~ "other",
     str_detect(country, "australia") ~ "other",
     str_detect(country, "austria") ~ "other",
-    str_detect(country, "soviet canuckistan") ~ "other",
     str_detect(country, "subscribe to dm4uz3 on youtube") ~ "other",
     str_detect(country, str_c(usa_pattern, collapse = "|")) ~ "usa",
     str_detect(country, str_c(uk_pattern, collapse = "|")) ~ "uk",
