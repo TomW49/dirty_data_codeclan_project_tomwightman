@@ -35,7 +35,7 @@ decathlon %>%
 
 Q3. Who had the highest total points across both competitions?
 
-A.  Serble had the highest points for both competitions.
+A.  Sebrle had the highest points for both competitions.
 
 ```{r}
 decathlon %>% 

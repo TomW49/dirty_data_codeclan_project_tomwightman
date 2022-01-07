@@ -89,14 +89,14 @@ Clay has the longest long jump at 7.92 meters.
 
 ### Q3. Who had the highest total points across both competitions?
 
-Serble had the highest points for both competitions.
+Sebrle had the highest points for both competitions.
 
 - Decastar - 8217	
 - OlympicG - 8893	
 
 ### Q4. What was the shot-put scores for the top three competitors in each competition?
 
-- Decastar:	Yurkov - 15.19, Serble -	14.83, Karpov -	14.77		
+- Decastar:	Yurkov - 15.19, Sebrle -	14.83, Karpov -	14.77		
 - OlympicG:	Sebrle - 16.36, Karpov -	15.93, Macey - 15.73
 
 ### Q5. What was the average points for competitors who ran the 400m in less than 50 seconds vs. those than ran 400m in more than 50 seconds?
